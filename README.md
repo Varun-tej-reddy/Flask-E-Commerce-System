@@ -10,6 +10,7 @@ This is a Flask-based e‑commerce web application built as a college project. I
 
 
 
+
 Project Structure
 
 web_project/
