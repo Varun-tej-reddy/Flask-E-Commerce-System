@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checkout</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Basic styling for the modal to ensure it's centered and visible */
+        #confirmation-modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Use a semi-transparent background for the overlay */
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px); /* Apply blur to the background content */
+            z-index: 9999; /* Ensure it's on top of everything */
+            justify-content: center; /* Center content horizontally */
+            align-items: center; /* Center content vertically */
+        }
+
+        #confirmation-modal > div {
+            background-color: white;
+            padding: 30px 50px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            font-size: 20px;
+            font-weight: bold;
+            /* Position relative is needed for absolute positioning of potential future elements */
+            position: relative;
+            /* Prevent backdrop blur from affecting modal message and confetti */
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+        .action-button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: box-shadow 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .action-button:hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        #screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            z-index: 10000;
+            pointer-events: none;
+            transition: opacity 0.2s ease-in-out;
+        }
+    </style>
+</head>
+<body style="margin: 0; font-family: Arial, sans-serif; background-color: #fff5f5; display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div id="blur-container">
+        <div class="main-container" style="background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 800px;">
+        <h2 style="text-align: center; margin-bottom: 25px;">Order Summary for {{ current_user.username.split('@')[0] | title }}</h2>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background-color: #4CAF50; color: white;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">ID</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Product</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Price</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Qty</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Subtotal</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{{ loop.index }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{{ item.product.name }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">₹{{ item.product.price }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">{{ item.quantity }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">₹{{ item.product.price * item.quantity }}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">
+                        <form method="POST" action="{{ url_for('main.remove_from_cart', item_id=item.id) }}">
+                            <button type="submit" class="action-button" style="background-color: #dc3545;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3 style="text-align: right;">Total: ₹{{ grand_total }}</h3>
+
+        <div style="margin-top: 30px;">
+            <label for="phone">Enter Phone Number:</label><br>
+            <input type="text" id="phone" name="phone" style="width: 100%; padding: 10px; margin-top: 8px;"><br><br>
+
+            <label>Select Payment Method:</label><br>
+            <input type="radio" id="credit" name="payment" value="Credit Card">
+            <label for="credit">Credit Card</label><br>
+            <input type="radio" id="debit" name="payment" value="Debit Card">
+            <label for="debit">Debit Card</label><br>
+            <input type="radio" id="upi" name="payment" value="UPI">
+            <label for="upi">UPI</label><br>
+            <input type="radio" id="cash" name="payment" value="Cash">
+            <label for="cash">Cash</label><br><br>
+
+            <button id="place-order-btn" class="action-button" style="background-color: green;">Place Order</button>
+        </div>
+
+        <div id="order-message" style="margin-top: 20px; font-weight: bold; color: green;"></div>
+
+        <form method="POST" style="text-align: center; margin-top: 20px;">
+            <a href="{{ url_for('main.user_dashboard') }}" class="action-button" style="background-color: #6c757d;">Home</a>
+            <a href="{{ url_for('main.view_cart') }}" class="action-button" style="background-color: #dd6dbd;">Cart</a>
+        </form>
+        </div>
+    </div>
+
+    <div id="confirmation-modal">
+        <div>
+            <h2 id="confirmation-message"></h2>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        function placeOrder() {
+            const phoneInput = document.getElementById('phone');
+            const paymentOption = document.querySelector('input[name="payment"]:checked');
+            // Extract username before '@' for a cleaner display
+            const username = "{{ current_user.username.split('@')[0] | title if current_user.username else 'User' }}";
+            // Basic validation
+            if (!phoneInput.value || !paymentOption) {
+                alert("Please enter phone number and select a payment method.");
+                return;
+            }
+
+            const method = paymentOption.value;
+            const formData = new URLSearchParams();
+            formData.append('phone', phoneInput.value);
+            formData.append('payment', method);
+
+            // Send the order data to the server
+            fetch("{{ url_for('main.checkout') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: formData.toString()
+            })
+            .then(response => {
+                // Check if the server responded with a redirect (indicating success)
+                if (response.redirected) {
+                    // Construct the confirmation message
+                    const message = `Hello, ${username}! Your order has been placed. Payment via ${method}.`;
+
+                    // Apply blur to the main content container
+                    document.getElementById('blur-container').style.filter = 'blur(5px)';
+
+                    // Get references to the modal and the inner message div
+                    const confirmationModal = document.getElementById('confirmation-modal');
+                    const confirmationMessageDiv = confirmationModal.querySelector('div'); // Get the inner div with the message
+
+                    // Set the confirmation message text
+                    document.getElementById('confirmation-message').innerText = message;
+
+                    // Display the modal
+                    confirmationModal.style.display = 'flex';
+
+                    const flash = document.getElementById('screen-flash');
+                    flash.style.opacity = '1';
+                    setTimeout(() => flash.style.opacity = '0', 200);
+
+                    // Trigger confetti animation instantly, randomizing origin across the top
+                    const duration = 7 * 1000;
+                    const end = Date.now() + duration;
+                    (function frame() {
+                        confetti({
+                            particleCount: 7,
+                            angle: 90,
+                            spread: 70,
+                            startVelocity: 45,
+                            gravity: 0.5,
+                            ticks: 400,
+                            origin: { x: Math.random(), y: 0 }
+                        });
+                        if (Date.now() < end) {
+                            requestAnimationFrame(frame);
+                        }
+                    })();
+
+                    // Redirect to the user dashboard after a longer delay
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('main.user_dashboard') }}";
+                    }, 7000); // Delay in milliseconds
+                }
+                // You might want to add error handling here for non-redirect responses
+            })
+            .catch(error => {
+                console.error('Error placing order:', error);
+                // Display an error message to the user
+                alert("An error occurred while placing your order. Please try again.");
+                // Hide the modal if it was shown
+                document.getElementById('confirmation-modal').style.display = 'none';
+                // Remove blur if it was applied
+                document.getElementById('blur-container').style.filter = 'none';
+            });
+        }
+
+        document.getElementById('place-order-btn').addEventListener('click', placeOrder);
+    </script>
+<div id="screen-flash"></div>
+</body>
+</html>

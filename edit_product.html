@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Product</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .form-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .form-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .action-button:hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body style="background-color: #fff5f5;">
+    <div class="form-container">
+        <h2>Edit Product</h2>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <p>{{ form.name.label }}<br>{{ form.name(class="input-field") }}</p>
+            <p>{{ form.description.label }}<br>{{ form.description(class="input-field") }}</p>
+            <p>{{ form.price.label }}<br>{{ form.price(class="input-field") }}</p>
+            <p>
+                {{ form.image.label }}<br>
+                {{ form.image(class="input-field", onchange="previewImage(event)") }}
+            </p>
+            <img id="image-preview" src="{{ url_for('static', filename='uploads/' + product.image_filename) }}" alt="Current Image" style="max-width: 200px; margin-top: 10px;" />
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                <a href="{{ url_for('main.manage_products') }}" class="action-button" style="background-color: #6c757d;">Back</a>
+                {{ form.submit(class="action-button", style="background-color: #28a745;") }}
+            </div>
+            <div style="text-align: center;">
+                <a href="{{ url_for('main.admin_dashboard') }}" class="action-button" style="background-color: #6c757d;">⬅ Back to Dashboard</a>
+            </div>
+        </form>
+    </div>
+<script>
+    function previewImage(event) {
+        const output = document.getElementById('image-preview');
+        output.src = URL.createObjectURL(event.target.files[0]);
+        output.onload = function() {
+            URL.revokeObjectURL(output.src);
+        }
+    }
+</script>
+</body>
+</html>

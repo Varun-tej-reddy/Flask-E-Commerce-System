@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #fff5f5;
+  }
+  .update-password-btn {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+  }
+  .update-password-btn:hover {
+    background-color: #218838;
+  }
+</style>
+<div style="background-color: #1c2a48; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 8px;">
+  <div style="font-size: 1.5em; font-weight: bold;">
+    Hey, {{ current_user.username.split('@')[0] | title }}!
+  </div>
+  <div>
+    <a href="{{ url_for('main.user_dashboard') }}" style="padding: 8px 16px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 6px;">
+    Back
+  </a>
+  </div>
+</div>
+<h1>  Settings</h1>
+<div style="max-width: 500px; margin: 60px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+  <h2 style="text-align:center; margin-bottom: 25px;">Change Password</h2>
+  <form method="POST" action="{{ url_for('main.change_password') }}">
+    <div style="margin-bottom: 15px;">
+      <label for="current_password">Current Password:</label>
+      <div style="position: relative;">
+        <input type="password" name="current_password" id="current_password" required style="width: 93.5%; padding: 10px 40px 10px 10px; border-radius: 6px; border: 1px solid #ccc;">
+        <span onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer;">
+          <img id="eye-icon" src="{{ url_for('static', filename='eye-closed.png') }}" alt="Toggle visibility" width="20">
+        </span>
+      </div>
+    </div>
+    <div style="margin-bottom: 15px;">
+      <label for="new_password">New Password:</label>
+      <input type="password" name="new_password" id="new_password" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+    </div>
+    <div style="margin-bottom: 25px;">
+      <label for="confirm_password">Confirm New Password:</label>
+      <input type="password" name="confirm_password" id="confirm_password" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+    </div>
+    <div style="margin-bottom: 20px;">
+      <label>
+        <input type="checkbox" onclick="toggleNewPasswords()"> Show Password
+      </label>
+    </div>
+    <div style="text-align: center;">
+      <button type="submit" class="update-password-btn">Update Password</button>
+    </div>
+  </form>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div style="margin-top: 20px;">
+        {% for category, message in messages %}
+          {% set allowed_messages = [
+            'Current password is incorrect.',
+            'New passwords do not match.',
+            'New password cannot be the same as the old password.'
+          ] %}
+
+          {% if message in allowed_messages %}
+            <div class="alert-box alert-danger" style="text-align: center;" id="flash-message">
+              {{ message }}
+            </div>
+          {% elif category == 'success' and 'Password updated' in message %}
+            <!-- Success overlay for "Password updated" -->
+            <div id="success-overlay" style="display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(6px); z-index: 9999; justify-content: center; align-items: center;">
+              <div style="padding: 30px 50px; background-color: white; border-radius: 12px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 20px; font-weight: bold; color: #28a745;">
+                Password Updated Successfully!.....
+              </div>
+            </div>
+            <script>
+              setTimeout(() => {
+                window.location.href = "{{ url_for('main.user_dashboard') }}";
+              }, 4000);
+            </script>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+</div>
+<style>
+  .alert-box {
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    margin-bottom: 10px;
+  }
+  .alert-success {
+    background-color: #28a745;
+  }
+  .alert-danger {
+    background-color: red;
+  }
+</style>
+<script>
+  function togglePassword() {
+    const input = document.getElementById('current_password');
+    const icon = document.getElementById('eye-icon');
+    const openIcon = "{{ url_for('static', filename='eye-open.png') }}";
+    const closedIcon = "{{ url_for('static', filename='eye-closed.png') }}";
+
+    if (input.type === "password") {
+      input.type = "text";
+      icon.src = openIcon;
+    } else {
+      input.type = "password";
+      icon.src = closedIcon;
+    }
+  }
+  function toggleNewPasswords() {
+    const newPass = document.getElementById('new_password');
+    const confirmPass = document.getElementById('confirm_password');
+    const newType = newPass.type === 'password' ? 'text' : 'password';
+    newPass.type = newType;
+    confirmPass.type = newType;
+  }
+  // Auto-hide flash message after 4 seconds
+  setTimeout(() => {
+    const flash = document.getElementById('flash-message');
+    if (flash) {
+      flash.style.display = 'none';
+    }
+  }, 4000);
+</script>
+{% endblock %}

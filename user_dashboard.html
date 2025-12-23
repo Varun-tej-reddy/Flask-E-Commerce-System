@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}User Dashboard{% endblock %}
+
+
+{% block content %}
+<body style="background-color: #fff5f5;">
+
+<div style="background-color: #1c2a48; padding: 15px 30px; color: white; display: flex; justify-content: space-between; align-items: center; border-radius: 8px;">
+  <div style="font-size: 1.5em; font-weight: bold;">
+    Welcome, {{ current_user.username.split('@')[0] | title }}!
+  </div>
+  <div>
+    <a href="{{ url_for('main.view_cart') }}" style="color: white; text-decoration: none; margin-right: 20px;">CART</a>
+    <a href="{{ url_for('main.order_history') }}" style="color: white; text-decoration: none; margin-right: 20px;">ORDER HISTORY</a>
+    <a href="{{ url_for('main.settings') }}" style="color: white; text-decoration: none; margin-right: 20px;">SETTINGS</a>
+    <a href="{{ url_for('main.logout') }}" style="color: white; text-decoration: none;">LOGOUT</a>
+  </div>
+</div>
+<br>
+
+
+<style>
+  @keyframes fadeout {
+    to { opacity: 0; visibility: hidden; }
+  }
+</style>
+<script>
+  setTimeout(() => {
+    const popup = document.getElementById('success-popup');
+    if (popup) popup.style.display = 'none';
+  }, 4000);
+</script>
+
+<h2>Available Products</h2>
+<div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; flex-wrap: wrap;">
+  <input type="text" id="searchInput" placeholder="Search products..." style="padding: 10px; width: 250px; border-radius: 8px; border: 1px solid #ccc;">
+  <select id="sortSelect" style="padding: 10px; border-radius: 8px;">
+      <option value="none">Sort by price</option>
+      <option value="asc">Low to High</option>
+      <option value="desc">High to Low</option>
+  </select>
+  <select id="featureFilter" style="padding: 10px; border-radius: 8px;">
+      <option value="all">Filter by feature</option>
+      <option value="128gb storage">128GB Storage</option>
+      <option value="256gb storage">256GB Storage</option>
+      <option value="8gb ram">8GB RAM</option>
+      <option value="12gb ram">12GB RAM</option>
+      <option value="6gb ram">6GB RAM </option>
+      <option value="4gb ram">4GB RAM </option>
+  </select>
+</div>
+<div class="product-grid">
+    {% for product in products %}
+      <div class="product-card">
+          <h4>{{ product.name }}</h4>
+          <p>Price: ₹{{ product.price }}</p>
+          <p>{{ product.description }}</p>
+          <img src="{{ url_for('static', filename='uploads/' ~ product.image_filename) }}" alt="{{ product.name }}">
+          <a class="add-cart-btn" href="{{ url_for('main.add_to_cart', product_id=product.id) }}">Add to Cart</a>
+      </div>
+    {% endfor %}
+</div>
+<style>
+  .product-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 20px;
+  }
+
+  .product-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      width: 250px;
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .product-card img {
+      max-width: 100%;
+      height: auto;
+      margin-bottom: 15px;
+  }
+
+  .add-cart-btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-top: 10px;
+  }
+
+  .add-cart-btn:hover {
+      background-color: #218838;
+  }
+</style>
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const sortSelect = document.getElementById('sortSelect');
+  const cardsContainer = document.querySelector('.product-grid');
+
+  function filterAndSort() {
+    const cards = Array.from(cardsContainer.querySelectorAll('.product-card'));
+    const query = searchInput.value.toLowerCase();
+    const order = sortSelect.value;
+    const feature = document.getElementById('featureFilter').value;
+
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      const matchesQuery = text.includes(query);
+      const matchesFeature = feature === 'all' || text.includes(feature);
+      card.style.display = matchesQuery && matchesFeature ? '' : 'none';
+    });
+
+    const visibleCards = cards.filter(card => card.style.display !== 'none');
+
+    visibleCards.sort((a, b) => {
+      const priceA = parseFloat(a.querySelector('p').innerText.replace('Price: ₹', ''));
+      const priceB = parseFloat(b.querySelector('p').innerText.replace('Price: ₹', ''));
+      return order === 'asc' ? priceA - priceB : order === 'desc' ? priceB - priceA : 0;
+    });
+
+    visibleCards.forEach(card => cardsContainer.appendChild(card));
+  }
+
+  searchInput.addEventListener('input', filterAndSort);
+  sortSelect.addEventListener('change', filterAndSort);
+  document.getElementById('featureFilter').addEventListener('change', filterAndSort);
+</script>
+</body>
+{% endblock %}

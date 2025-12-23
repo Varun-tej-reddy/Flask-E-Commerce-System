@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Products</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #fef6f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 95%;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .hover-button {
+            padding: 8px 16px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: box-shadow 0.3s ease, transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .hover-button:hover {
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            transform: scale(1.03);
+        }
+
+        .btn-edit {
+            background-color: #007bff;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            padding: 10px 20px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align: center;">Manage Products</h2>
+        <div style="margin-bottom: 20px; text-align: center;">
+            <input type="text" id="searchInput" placeholder="Search products..." style="padding: 10px; width: 300px; border-radius: 8px; border: 1px solid #ccc;">
+        </div>
+        <div style="margin-bottom: 20px; text-align: center;">
+            <label for="sortSelect">Sort by price:</label>
+            <select id="sortSelect" style="padding: 8px; border-radius: 5px; margin-left: 8px;">
+                <option value="none">-- Select --</option>
+                <option value="asc">Low to High</option>
+                <option value="desc">High to Low</option>
+            </select>
+        </div>
+        <div style="margin-bottom: 20px; text-align: center;">
+            <strong>Total Products:</strong> {{ products|length }}
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Description</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.id }}</td>
+                    <td>{{ product.name }}</td>
+                    <td>₹{{ product.price }}</td>
+                    <td>{{ product.description }}</td>
+                    <td>
+                        <img src="{{ url_for('static', filename='uploads/' ~ product.image_filename) }}" alt="{{ product.name }}" style="max-width: 60px; max-height: 60px;">
+                    </td>
+                    <td>
+                        <a href="{{ url_for('main.edit_product', product_id=product.id) }}" class="hover-button btn-edit">Edit</a>
+                        <form method="POST" action="{{ url_for('main.delete_product', product_id=product.id) }}" style="display:inline;">
+                            <button type="submit" onclick="return confirm('Delete this product?')" class="hover-button btn-delete">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="text-align: center;">
+            <a href="{{ url_for('main.admin_dashboard') }}" class="hover-button btn-back">⬅ Back to Dashboard</a>
+        </div>
+    </div>
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function () {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('tbody tr');
+
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+
+document.getElementById('sortSelect').addEventListener('change', function () {
+    const order = this.value;
+    const tbody = document.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    rows.sort((a, b) => {
+        const priceA = parseFloat(a.children[2].innerText.replace('₹', '').trim());
+        const priceB = parseFloat(b.children[2].innerText.replace('₹', '').trim());
+
+        return order === 'asc' ? priceA - priceB : order === 'desc' ? priceB - priceA : 0;
+    });
+
+    rows.forEach(row => tbody.appendChild(row));
+});
+</script>
+</body>
+</html>

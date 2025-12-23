@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Product Order History{% endblock %}
+
+{% block content %}
+<h2>All Orders</h2>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<style>
+   .action-button {
+            padding: 10px 20px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .action-button:hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+</style>
+<p>
+        <a href="{{ url_for('main.admin_dashboard') }}" class="action-button" style="background-color: #6c757d;">Back</a>
+</p>
+{% set ns = namespace(order_total=0, grand_total=0) %}
+{% for order in orders %}
+  <div class="order">
+    <h3>Order ID: {{ order.id }}</h3>
+    <p>User: {{ order.user.username .split('@')[0] | title}}</p>
+    <p>Date: {{ order.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+
+    <ul>
+      {% set ns.order_total = 0 %}
+      {% for item in order.items %}
+        <li>
+          {{ item.product_name }} — ₹{{ item.price }} × {{ item.quantity }} = ₹{{ item.price * item.quantity }}
+          {% set ns.order_total = ns.order_total + (item.price * item.quantity) %}
+        </li>
+      {% endfor %}
+    </ul>
+
+    <p><strong>Total: ₹{{ ns.order_total }}</strong></p>
+    {% set ns.grand_total = ns.grand_total + ns.order_total %}
+    <hr>
+  </div>
+{% else %}
+  <p>No orders found.</p>
+{% endfor %}
+
+<h3>Grand Total: ₹{{ ns.grand_total }}</h3>
+<p>
+  <a href="{{ url_for('main.admin_dashboard') }}" class="action-button" style="background-color: #6c757d;">Back</a>
+</p>
+{% endblock %}

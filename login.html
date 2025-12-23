@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body style="margin: 0; font-family: Arial, sans-serif; background-color: #fff5f5; display: flex; justify-content: center; align-items: center; height: 100vh;">
+    <div style="background-color: white; padding: 40px; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 300px;">
+        <h2 style="text-align: center;">Login</h2>
+        
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div style="margin-bottom: 15px;">
+                {{ form.username.label(text="Email") }}
+                {{ form.username(class_="form-control", style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;") }}
+            </div>
+            
+            <div style="margin-bottom: 10px;">
+                {{ form.password.label(text="Password") }}
+                {{ form.password(id="password", class_="form-control", style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px;") }}
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label><input type="checkbox" onclick="togglePassword()"> Show password</label>
+            </div>
+            
+            {{ form.submit(class_="btn", style="width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;", onmouseover="this.style.backgroundColor='#218838'", onmouseout="this.style.backgroundColor='#28a745'") }}
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul style="color: red; margin-top: 15px;">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        </form>
+
+        <p style="margin-top: 15px; text-align: center;">New user? <a href="{{ url_for('main.register') }}">Register here</a></p>
+</div>
+<script>
+function togglePassword() {
+    var pwd = document.getElementById("password");
+    if (pwd.type === "password") {
+        pwd.type = "text";
+    } else {
+        pwd.type = "password";
+    }
+}
+</script>
+</body>
+</html>

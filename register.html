@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #f3f7fa;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .form-container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .form-container form p {
+            text-align: left;
+            margin-bottom: 15px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-container input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .form-container input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .message {
+            color: red;
+            list-style-type: none;
+            padding-left: 0;
+            margin-top: 10px;
+        }
+        .form-container a {
+            color: #5a00d2;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Create a New Account</h2>
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <p>{{ form.username.label }}<br>{{ form.username(size=32) }}</p>
+            <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
+            <p>{{ form.submit() }}</p>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <ul class="message">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+        </form>
+        <p>Already have an account? <a href="{{ url_for('main.login') }}">Login here</a></p>
+    </div>
+</body>
+</html>

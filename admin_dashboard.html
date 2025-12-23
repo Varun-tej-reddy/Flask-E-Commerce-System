@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 90vh; flex-direction: column;">
+  <h1 style="margin-bottom: 20px;">Admin Dashboard</h1>
+  <div style="max-width: 700px; padding: 35px; background-color: white; border-radius: 15px; box-shadow: 0 0 25px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 20px;">
+  <a href="{{ url_for('main.add_product') }}" class="hover-button" style="background-color: #28a745; color: white; padding: 14px 28px; border-radius: 10px; text-decoration: none;">Add Product</a>
+  <a href="{{ url_for('main.manage_products') }}" class="hover-button" style="background-color: #007bff; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Manage Products</a>
+  <a href="{{ url_for('main.admin_order_history') }}" class="hover-button" style="background-color: #17a2b8; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">User Order History</a>
+  <a href="{{ url_for('main.logout') }}" class="hover-button" style="background-color: #dc3545; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none;">Logout</a>
+</div>
+</div>
+
+
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul class="flash-messages">
+      {% for message in messages %}
+        <li style="color: green;">{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
+
+<style>
+  body {
+    background-color: #fef6f9; /* a soft cute pale pink */
+  }
+  .input-field {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      margin-top: 5px;
+  }
+
+  .submit-button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+  }
+
+  .submit-button:hover {
+      background-color: #218838;
+  }
+
+  .hover-button {
+    transition: box-shadow 0.3s ease, transform 0.2s ease;
+    font-size: 18px;
+    padding: 14px 28px;
+    border-radius: 10px;
+  }
+
+  .hover-button:hover {
+    box-shadow: 0 0 100px rgba(0,0,0,0.3);
+    transform: scale(1.2);
+  }
+</style>
+
+{% endblock %}
