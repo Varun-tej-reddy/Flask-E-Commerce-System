@@ -1,6 +1,15 @@
 # Flask-E-Commerce-System
 This is a Flask-based e‑commerce web application built as a college project. It includes user authentication, admin product management, product image upload, and MySQL database integration.  The project is structured in a clean, modular way using Flask best practices.
 
+
+
+
+
+
+
+
+
+
 Project Structure
 
 web_project/
@@ -17,9 +26,8 @@ web_project/
 │        ├── add_product.html  # Add product page
 │   ├── static/
 │       ├── upload/           # stores uploaded product images
-│       ├── css/style.css     # Styling
 │
-├── templates/
+│   ├── templates/
 │   ├──add_product.html
 │   ├──admin_dashboard.html
 │   ├──admin_orders.html
@@ -32,4 +40,4 @@ web_project/
 │   ├──orders.html
 │   ├──register.html
 │   ├──settings.html
-    └──user_dashboard.html
+        └──user_dashboard.html
